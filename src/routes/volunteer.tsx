@@ -31,7 +31,26 @@ export const Route = createFileRoute("/volunteer")({
   component: VolunteerPage,
 });
 
-const EMOJIS = ["🙂", "😀", "🧑", "👩", "👳", "🧕", "👨‍🦳"];
+function isPhotoImage(photo: string) {
+  return photo.startsWith("data:image");
+}
+
+function VolunteerPhoto({ photo, name, size = "h-20 w-20" }: { photo: string; name: string; size?: string }) {
+  if (isPhotoImage(photo)) {
+    return (
+      <img
+        src={photo}
+        alt={`Photo of ${name}`}
+        className={cn(size, "rounded-full border border-border object-cover")}
+      />
+    );
+  }
+  return (
+    <span className={cn("grid place-items-center rounded-full bg-primary-soft text-4xl", size)} aria-hidden>
+      {photo}
+    </span>
+  );
+}
 
 function VolunteerPage() {
   const { profile } = useStore();
@@ -42,7 +61,24 @@ function VolunteerPage() {
     profile?.neighbourhood ?? NEIGHBOURHOODS[0]!,
   );
   const [intro, setIntro] = useState(profile?.intro ?? "");
-  const [photo, setPhoto] = useState(profile?.photo ?? EMOJIS[0]!);
+  const [photo, setPhoto] = useState(profile?.photo ?? "");
+  const [photoError, setPhotoError] = useState("");
+
+  const onPhotoPick = (file: File | null) => {
+    setPhotoError("");
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Please choose an image file (JPG or PNG).");
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      setPhotoError("Photo must be smaller than 3 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setPhoto(String(reader.result));
+    reader.readAsDataURL(file);
+  };
   const [availability, setAvailability] = useState(profile?.availability ?? "Weekends");
   const [cats, setCats] = useState<CategoryId[]>(profile?.categories ?? []);
   const [phone, setPhone] = useState("");
@@ -65,9 +101,7 @@ function VolunteerPage() {
         <StatusBanner status={profile.status} tier={TIER_LABEL[profile.trustTier]} />
         <AdminSimulation status={profile.status} />
         <div className="card-soft mt-6 p-6 sm:p-8">
-          <span className="text-5xl" aria-hidden>
-            {profile.photo}
-          </span>
+          <VolunteerPhoto photo={profile.photo} name={profile.name} />
           <h1 className="mt-3 text-3xl">{profile.name}</h1>
           <p className="text-muted-foreground">{profile.neighbourhood}</p>
           <p className="mt-4 text-foreground/85">“{profile.intro}”</p>
