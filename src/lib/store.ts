@@ -63,6 +63,8 @@ export type HelpRequest = {
   neighbourhood: string;
   recurring: boolean;
   requesterName: string;
+  /** Optional photo (data URL) uploaded by the requester. */
+  requesterPhoto?: string;
   verified: boolean;
   mine: boolean;
   status: RequestStatus;
@@ -345,7 +347,7 @@ export const actions = {
   createRequest(
     data: Omit<
       HelpRequest,
-      "id" | "status" | "offers" | "mine" | "requesterName" | "verified"
+      "id" | "status" | "offers" | "mine" | "verified"
     >,
   ) {
     const req: HelpRequest = {
@@ -354,7 +356,6 @@ export const actions = {
       status: "open",
       offers: [],
       mine: true,
-      requesterName: "You",
       verified: true,
     };
     // Demo: a verified neighbour offers help so the offer + trust flow can be tried.
