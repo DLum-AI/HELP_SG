@@ -10,16 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as NewRequestRouteImport } from './routes/new-request'
 import { Route as SafetyRouteImport } from './routes/safety'
 import { Route as VolunteerRouteImport } from './routes/volunteer'
+import { Route as CompleteIdRouteImport } from './routes/complete.$id'
+import { Route as MessagesIndexRouteImport } from './routes/messages.index'
+import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 import { Route as RequestsIndexRouteImport } from './routes/requests.index'
 import { Route as RequestsIdRouteImport } from './routes/requests.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HowItWorksRoute = HowItWorksRouteImport.update({
@@ -42,6 +51,21 @@ const VolunteerRoute = VolunteerRouteImport.update({
   path: '/volunteer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompleteIdRoute = CompleteIdRouteImport.update({
+  id: '/complete/$id',
+  path: '/complete/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesIndexRoute = MessagesIndexRouteImport.update({
+  id: '/messages/',
+  path: '/messages/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesIdRoute = MessagesIdRouteImport.update({
+  id: '/messages/$id',
+  path: '/messages/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RequestsIndexRoute = RequestsIndexRouteImport.update({
   id: '/requests/',
   path: '/requests/',
@@ -55,69 +79,97 @@ const RequestsIdRoute = RequestsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/how-it-works': typeof HowItWorksRoute
   '/new-request': typeof NewRequestRoute
   '/safety': typeof SafetyRoute
   '/volunteer': typeof VolunteerRoute
+  '/complete/$id': typeof CompleteIdRoute
+  '/messages/$id': typeof MessagesIdRoute
   '/requests/$id': typeof RequestsIdRoute
+  '/messages/': typeof MessagesIndexRoute
   '/requests/': typeof RequestsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/how-it-works': typeof HowItWorksRoute
   '/new-request': typeof NewRequestRoute
   '/safety': typeof SafetyRoute
   '/volunteer': typeof VolunteerRoute
+  '/complete/$id': typeof CompleteIdRoute
+  '/messages/$id': typeof MessagesIdRoute
   '/requests/$id': typeof RequestsIdRoute
+  '/messages': typeof MessagesIndexRoute
   '/requests': typeof RequestsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/how-it-works': typeof HowItWorksRoute
   '/new-request': typeof NewRequestRoute
   '/safety': typeof SafetyRoute
   '/volunteer': typeof VolunteerRoute
+  '/complete/$id': typeof CompleteIdRoute
+  '/messages/$id': typeof MessagesIdRoute
   '/requests/$id': typeof RequestsIdRoute
+  '/messages/': typeof MessagesIndexRoute
   '/requests/': typeof RequestsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dashboard'
     | '/how-it-works'
     | '/new-request'
     | '/safety'
     | '/volunteer'
+    | '/complete/$id'
+    | '/messages/$id'
     | '/requests/$id'
+    | '/messages/'
     | '/requests/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/dashboard'
     | '/how-it-works'
     | '/new-request'
     | '/safety'
     | '/volunteer'
+    | '/complete/$id'
+    | '/messages/$id'
     | '/requests/$id'
+    | '/messages'
     | '/requests'
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
     | '/how-it-works'
     | '/new-request'
     | '/safety'
     | '/volunteer'
+    | '/complete/$id'
+    | '/messages/$id'
     | '/requests/$id'
+    | '/messages/'
     | '/requests/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
   HowItWorksRoute: typeof HowItWorksRoute
   NewRequestRoute: typeof NewRequestRoute
   SafetyRoute: typeof SafetyRoute
   VolunteerRoute: typeof VolunteerRoute
+  CompleteIdRoute: typeof CompleteIdRoute
+  MessagesIdRoute: typeof MessagesIdRoute
   RequestsIdRoute: typeof RequestsIdRoute
+  MessagesIndexRoute: typeof MessagesIndexRoute
   RequestsIndexRoute: typeof RequestsIndexRoute
 }
 
@@ -128,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/how-it-works': {
@@ -158,6 +217,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VolunteerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/complete/$id': {
+      id: '/complete/$id'
+      path: '/complete/$id'
+      fullPath: '/complete/$id'
+      preLoaderRoute: typeof CompleteIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages/': {
+      id: '/messages/'
+      path: '/messages'
+      fullPath: '/messages/'
+      preLoaderRoute: typeof MessagesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages/$id': {
+      id: '/messages/$id'
+      path: '/messages/$id'
+      fullPath: '/messages/$id'
+      preLoaderRoute: typeof MessagesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/requests/': {
       id: '/requests/'
       path: '/requests'
@@ -177,11 +257,15 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
   HowItWorksRoute: HowItWorksRoute,
   NewRequestRoute: NewRequestRoute,
   SafetyRoute: SafetyRoute,
   VolunteerRoute: VolunteerRoute,
+  CompleteIdRoute: CompleteIdRoute,
+  MessagesIdRoute: MessagesIdRoute,
   RequestsIdRoute: RequestsIdRoute,
+  MessagesIndexRoute: MessagesIndexRoute,
   RequestsIndexRoute: RequestsIndexRoute,
 }
 export const routeTree = rootRouteImport
