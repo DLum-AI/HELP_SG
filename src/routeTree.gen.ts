@@ -10,12 +10,36 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as NewRequestRouteImport } from './routes/new-request'
+import { Route as SafetyRouteImport } from './routes/safety'
+import { Route as VolunteerRouteImport } from './routes/volunteer'
 import { Route as RequestsIndexRouteImport } from './routes/requests.index'
 import { Route as RequestsIdRouteImport } from './routes/requests.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewRequestRoute = NewRequestRouteImport.update({
+  id: '/new-request',
+  path: '/new-request',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SafetyRoute = SafetyRouteImport.update({
+  id: '/safety',
+  path: '/safety',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VolunteerRoute = VolunteerRouteImport.update({
+  id: '/volunteer',
+  path: '/volunteer',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RequestsIndexRoute = RequestsIndexRouteImport.update({
@@ -31,30 +55,68 @@ const RequestsIdRoute = RequestsIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/new-request': typeof NewRequestRoute
+  '/safety': typeof SafetyRoute
+  '/volunteer': typeof VolunteerRoute
   '/requests/$id': typeof RequestsIdRoute
   '/requests/': typeof RequestsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/new-request': typeof NewRequestRoute
+  '/safety': typeof SafetyRoute
+  '/volunteer': typeof VolunteerRoute
   '/requests/$id': typeof RequestsIdRoute
   '/requests': typeof RequestsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/new-request': typeof NewRequestRoute
+  '/safety': typeof SafetyRoute
+  '/volunteer': typeof VolunteerRoute
   '/requests/$id': typeof RequestsIdRoute
   '/requests/': typeof RequestsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/requests/$id' | '/requests/'
+  fullPaths:
+    | '/'
+    | '/how-it-works'
+    | '/new-request'
+    | '/safety'
+    | '/volunteer'
+    | '/requests/$id'
+    | '/requests/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/requests/$id' | '/requests'
-  id: '__root__' | '/' | '/requests/$id' | '/requests/'
+  to:
+    | '/'
+    | '/how-it-works'
+    | '/new-request'
+    | '/safety'
+    | '/volunteer'
+    | '/requests/$id'
+    | '/requests'
+  id:
+    | '__root__'
+    | '/'
+    | '/how-it-works'
+    | '/new-request'
+    | '/safety'
+    | '/volunteer'
+    | '/requests/$id'
+    | '/requests/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  HowItWorksRoute: typeof HowItWorksRoute
+  NewRequestRoute: typeof NewRequestRoute
+  SafetyRoute: typeof SafetyRoute
+  VolunteerRoute: typeof VolunteerRoute
   RequestsIdRoute: typeof RequestsIdRoute
   RequestsIndexRoute: typeof RequestsIndexRoute
 }
@@ -66,6 +128,34 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new-request': {
+      id: '/new-request'
+      path: '/new-request'
+      fullPath: '/new-request'
+      preLoaderRoute: typeof NewRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/safety': {
+      id: '/safety'
+      path: '/safety'
+      fullPath: '/safety'
+      preLoaderRoute: typeof SafetyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/volunteer': {
+      id: '/volunteer'
+      path: '/volunteer'
+      fullPath: '/volunteer'
+      preLoaderRoute: typeof VolunteerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/requests/': {
@@ -87,6 +177,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  HowItWorksRoute: HowItWorksRoute,
+  NewRequestRoute: NewRequestRoute,
+  SafetyRoute: SafetyRoute,
+  VolunteerRoute: VolunteerRoute,
   RequestsIdRoute: RequestsIdRoute,
   RequestsIndexRoute: RequestsIndexRoute,
 }
