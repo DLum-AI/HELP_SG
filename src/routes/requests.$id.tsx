@@ -87,7 +87,15 @@ function RequestDetail() {
               const v = findVolunteer(store, name);
               return (
                 <div key={name} className="flex items-start gap-3 rounded-md border border-border p-4">
-                  <span className="text-2xl" aria-hidden>{v?.photo ?? "🙂"}</span>
+                  {v?.photo?.startsWith("data:image") ? (
+                    <img
+                      src={v.photo}
+                      alt={`Photo of ${v.name}`}
+                      className="h-9 w-9 rounded-full border border-border object-cover"
+                    />
+                  ) : (
+                    <span className="text-2xl" aria-hidden>{v?.photo ?? "🙂"}</span>
+                  )}
                   <div className="flex-1">
                     <p className="font-semibold">{name}</p>
                     {v ? <VolunteerCredentials volunteer={v} /> : null}
