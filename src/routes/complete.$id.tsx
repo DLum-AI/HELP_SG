@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button, Section, buttonClass, inputClass } from "@/components/ui-kit";
-import { actions, useStore } from "@/lib/store";
+import { APPRECIATION_TAGS, actions, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/complete/$id")({
@@ -15,7 +15,7 @@ export const Route = createFileRoute("/complete/$id")({
       { property: "og:title", content: "Helping hand complete — HelpSG" },
       {
         property: "og:description",
-        content: "Appreciation, not star ratings — send a thank-you note.",
+        content: "Share appreciation and a thank-you note with your volunteer.",
       },
     ],
   }),
@@ -33,6 +33,8 @@ function Complete() {
   const { requests } = useStore();
   const [mood, setMood] = useState("");
   const [note, setNote] = useState("");
+  const [stars, setStars] = useState(0);
+  const [tags, setTags] = useState<string[]>([]);
   const [sent, setSent] = useState(false);
   const request = requests.find((r) => r.id === id);
 
@@ -80,9 +82,10 @@ function Complete() {
           {moods.map((m) => (
             <button
               key={m.label}
+              type="button"
               onClick={() => setMood(m.emoji)}
               className={cn(
-                "flex w-28 flex-col items-center gap-1 rounded-2xl border p-4 text-sm transition",
+                "flex w-28 flex-col items-center gap-1 rounded-md border p-4 text-sm transition",
                 mood === m.emoji
                   ? "border-primary bg-primary-soft/60"
                   : "border-border hover:bg-muted",
@@ -96,6 +99,50 @@ function Complete() {
           ))}
         </div>
 
+        {request.acceptedVolunteer ? (
+          <>
+            <h2 className="mt-7 text-xl">A few stars for {request.acceptedVolunteer}</h2>
+            <p className="text-sm text-muted-foreground">Optional — every bit of help counts.</p>
+            <div className="mt-3 flex justify-center gap-1" role="radiogroup" aria-label="Star rating">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  role="radio"
+                  aria-checked={stars === n}
+                  aria-label={`${n} star${n > 1 ? "s" : ""}`}
+                  onClick={() => setStars(n)}
+                  className={cn(
+                    "text-4xl leading-none transition",
+                    n <= stars ? "text-accent" : "text-border hover:text-accent/60",
+                  )}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              {APPRECIATION_TAGS.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() =>
+                    setTags((x) => (x.includes(t) ? x.filter((y) => y !== t) : [...x, t]))
+                  }
+                  className={cn(
+                    "rounded-md border px-3 py-1.5 text-sm font-medium transition",
+                    tags.includes(t)
+                      ? "border-primary bg-primary-soft text-primary"
+                      : "border-border hover:bg-muted",
+                  )}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : null}
+
         <div className="mt-6 text-left">
           <p className="text-sm font-semibold">Leave a thank-you message</p>
           <textarea
@@ -104,6 +151,11 @@ function Complete() {
             onChange={(e) => setNote(e.target.value)}
             placeholder="Thank you for taking the time — it really made my week easier."
           />
+          {request.acceptedVolunteer ? (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Your note will appear on {request.acceptedVolunteer}'s volunteer profile.
+            </p>
+          ) : null}
         </div>
 
         <Button
@@ -111,7 +163,7 @@ function Complete() {
           className="mt-5"
           disabled={!mood}
           onClick={() => {
-            actions.complete(request.id, mood, note);
+            actions.complete(request.id, mood, note, stars ? { stars, tags } : undefined);
             setSent(true);
           }}
         >

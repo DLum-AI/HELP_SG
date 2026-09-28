@@ -79,6 +79,18 @@ export type Message = {
   at: string;
 };
 
+export type VolunteerStatus = "pending" | "approved" | "flagged";
+export type TrustTier = "tier_1_errands" | "tier_2_full";
+
+export type VolunteerRating = {
+  id: string;
+  requesterName: string;
+  rating: number;
+  tags: string[];
+  comment: string;
+  date: string;
+};
+
 export type VolunteerProfile = {
   name: string;
   neighbourhood: string;
@@ -86,13 +98,81 @@ export type VolunteerProfile = {
   categories: CategoryId[];
   availability: string;
   photo: string;
+  status: VolunteerStatus;
+  trustTier: TrustTier;
+  ratings: VolunteerRating[];
+  metrics: { completedTasks: number; ratingAverage: number; punctualityRate: number };
+  verificationDetails: {
+    phoneVerified: boolean;
+    codeOfConductAccepted: boolean;
+    emergencyContact: string;
+  };
+};
+
+export const APPRECIATION_TAGS = [
+  "Punctual",
+  "Clear Communication",
+  "Patient & Gentle",
+  "Followed Instructions",
+];
+
+export const SENSITIVE_CATEGORIES: CategoryId[] = ["companionship", "home"];
+
+export const TIER_LABEL: Record<TrustTier, string> = {
+  tier_1_errands: "Errands tier · Groceries & Pet Care",
+  tier_2_full: "Full tier · All categories incl. Home Help & Companionship",
 };
 
 type State = {
   requests: HelpRequest[];
   messages: Message[];
   profile: VolunteerProfile | null;
+  volunteers: VolunteerProfile[];
 };
+
+function computeMetrics(ratings: VolunteerRating[], base = 0) {
+  const avg = ratings.length
+    ? Math.round((ratings.reduce((s, r) => s + r.rating, 0) / ratings.length) * 10) / 10
+    : 0;
+  const punctual = ratings.length
+    ? Math.round((ratings.filter((r) => r.tags.includes("Punctual")).length / ratings.length) * 100)
+    : 0;
+  return { completedTasks: base + ratings.length, ratingAverage: avg, punctualityRate: punctual };
+}
+
+function demoVolunteer(
+  name: string,
+  neighbourhood: string,
+  photo: string,
+  intro: string,
+  ratings: Omit<VolunteerRating, "id">[],
+): VolunteerProfile {
+  const rs = ratings.map((r, i) => ({ ...r, id: `${name}-${i}` }));
+  return {
+    name,
+    neighbourhood,
+    intro,
+    photo,
+    categories: ["groceries", "companionship", "home", "pets"],
+    availability: "Weekends",
+    status: "approved",
+    trustTier: "tier_2_full",
+    ratings: rs,
+    metrics: computeMetrics(rs, 8),
+    verificationDetails: { phoneVerified: true, codeOfConductAccepted: true, emergencyContact: "On file" },
+  };
+}
+
+const seedVolunteers: VolunteerProfile[] = [
+  demoVolunteer("Daniel", "Bedok", "🧑", "I enjoy running errands and chatting with older neighbours.", [
+    { requesterName: "Mr Tan", rating: 5, tags: ["Punctual", "Patient & Gentle"], comment: "Very kind and patient with my mother.", date: "12 Sep" },
+    { requesterName: "Priya", rating: 5, tags: ["Clear Communication"], comment: "Kept me updated the whole time.", date: "5 Sep" },
+    { requesterName: "Jaya", rating: 4, tags: ["Punctual"], comment: "Thank you for the help!", date: "28 Aug" },
+  ]),
+  demoVolunteer("Mei Ling", "Tampines", "👩", "Retired teacher, happy to accompany neighbours to appointments.", [
+    { requesterName: "Sarah", rating: 5, tags: ["Patient & Gentle", "Followed Instructions"], comment: "My mum felt safe and cared for.", date: "20 Sep" },
+  ]),
+];
 
 const seedRequests: HelpRequest[] = [
   {
@@ -217,7 +297,18 @@ let state: State = {
     },
   ],
   profile: null,
+  volunteers: seedVolunteers,
 };
+
+export function findVolunteer(s: State, name: string): VolunteerProfile | undefined {
+  if (name === "You") return s.profile ?? undefined;
+  return s.volunteers.find((v) => v.name === name);
+}
+
+export function canHelpWith(profile: VolunteerProfile | null, cat: CategoryId) {
+  if (!SENSITIVE_CATEGORIES.includes(cat)) return true;
+  return profile?.status === "approved" && profile.trustTier === "tier_2_full";
+}
 
 const listeners = new Set<() => void>();
 
@@ -257,6 +348,9 @@ export const actions = {
       requesterName: "You",
       verified: true,
     };
+    // Demo: a verified neighbour offers help so the offer + trust flow can be tried.
+    const demo = state.volunteers.find((v) => v.neighbourhood === data.neighbourhood) ?? state.volunteers[0]!;
+    req.offers = [demo.name];
     set({ requests: [req, ...state.requests] });
     return req.id;
   },
@@ -282,14 +376,54 @@ export const actions = {
       ],
     });
   },
-  complete(requestId: string, mood: string, note: string) {
-    set({
+  complete(
+    requestId: string,
+    mood: string,
+    note: string,
+    rating?: { stars: number; tags: string[] },
+  ) {
+    const req = state.requests.find((r) => r.id === requestId);
+    const next: Partial<State> = {
       requests: state.requests.map((r) =>
         r.id === requestId ? { ...r, status: "completed", thanks: { mood, note } } : r,
       ),
-    });
+    };
+    const volName = req?.acceptedVolunteer;
+    if (rating && volName) {
+      const entry: VolunteerRating = {
+        id: id(),
+        requesterName: req!.mine ? "You" : req!.requesterName,
+        rating: rating.stars,
+        tags: rating.tags,
+        comment: note,
+        date: "Just now",
+      };
+      const apply = (v: VolunteerProfile): VolunteerProfile => {
+        const ratings = [entry, ...v.ratings];
+        const m = computeMetrics(ratings, v.metrics.completedTasks - v.ratings.length);
+        return {
+          ...v,
+          ratings,
+          metrics: m,
+          status: rating.stars < 3 ? "flagged" : v.status,
+        };
+      };
+      if (volName === "You" && state.profile) next.profile = apply(state.profile);
+      else next.volunteers = state.volunteers.map((v) => (v.name === volName ? apply(v) : v));
+    }
+    set(next);
   },
   saveProfile(profile: VolunteerProfile) {
     set({ profile });
+  },
+  setProfileStatus(status: VolunteerStatus) {
+    if (!state.profile) return;
+    set({
+      profile: {
+        ...state.profile,
+        status,
+        trustTier: status === "approved" ? "tier_2_full" : "tier_1_errands",
+      },
+    });
   },
 };

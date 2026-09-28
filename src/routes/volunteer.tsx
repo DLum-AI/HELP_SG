@@ -1,7 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Badge, Button, Field, Section, buttonClass, inputClass } from "@/components/ui-kit";
-import { CATEGORIES, NEIGHBOURHOODS, actions, useStore, type CategoryId } from "@/lib/store";
+import {
+  CATEGORIES,
+  NEIGHBOURHOODS,
+  TIER_LABEL,
+  actions,
+  useStore,
+  type CategoryId,
+  type VolunteerStatus,
+} from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/volunteer")({
@@ -11,12 +19,12 @@ export const Route = createFileRoute("/volunteer")({
       {
         name: "description",
         content:
-          "Create a volunteer profile and start helping neighbours with chores, errands, pets or companionship.",
+          "Create a verified volunteer profile and start helping neighbours with chores, errands, pets or companionship.",
       },
       { property: "og:title", content: "Become a volunteer — HelpSG" },
       {
         property: "og:description",
-        content: "Share what you can help with and when you're free.",
+        content: "Share what you can help with, get verified, and build neighbourly trust.",
       },
     ],
   }),
@@ -27,6 +35,8 @@ const EMOJIS = ["🙂", "😀", "🧑", "👩", "👳", "🧕", "👨‍🦳"];
 
 function VolunteerPage() {
   const { profile } = useStore();
+  const [step, setStep] = useState(1);
+  const [editing, setEditing] = useState(!profile);
   const [name, setName] = useState(profile?.name ?? "");
   const [neighbourhood, setNeighbourhood] = useState(
     profile?.neighbourhood ?? NEIGHBOURHOODS[0]!,
@@ -35,15 +45,26 @@ function VolunteerPage() {
   const [photo, setPhoto] = useState(profile?.photo ?? EMOJIS[0]!);
   const [availability, setAvailability] = useState(profile?.availability ?? "Weekends");
   const [cats, setCats] = useState<CategoryId[]>(profile?.categories ?? []);
-  const [saved, setSaved] = useState(false);
+  const [phone, setPhone] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [phoneVerified, setPhoneVerified] = useState(
+    profile?.verificationDetails.phoneVerified ?? false,
+  );
+  const [emergency, setEmergency] = useState(
+    profile?.verificationDetails.emergencyContact ?? "",
+  );
+  const [coc, setCoc] = useState(profile?.verificationDetails.codeOfConductAccepted ?? false);
 
   const toggle = (id: CategoryId) =>
     setCats((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
 
-  if (saved && profile) {
+  if (profile && !editing) {
     return (
       <Section className="max-w-2xl">
-        <div className="card-soft p-6 sm:p-8">
+        <StatusBanner status={profile.status} tier={TIER_LABEL[profile.trustTier]} />
+        <AdminSimulation status={profile.status} />
+        <div className="card-soft mt-6 p-6 sm:p-8">
           <span className="text-5xl" aria-hidden>
             {profile.photo}
           </span>
@@ -64,11 +85,48 @@ function VolunteerPage() {
           <p className="mt-4 text-sm text-muted-foreground">
             Available: {profile.availability}
           </p>
+
+          <div className="mt-6 grid grid-cols-3 gap-3 rounded-md bg-muted p-4 text-center">
+            <Stat label="Helped" value={String(profile.metrics.completedTasks)} />
+            <Stat
+              label="Rating"
+              value={profile.metrics.ratingAverage ? `★ ${profile.metrics.ratingAverage}` : "—"}
+            />
+            <Stat
+              label="Punctual"
+              value={profile.ratings.length ? `${profile.metrics.punctualityRate}%` : "—"}
+            />
+          </div>
+
+          <h2 className="mt-7 text-xl">Kind words from neighbours</h2>
+          {profile.ratings.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Thank-you notes will appear here after you help someone.
+            </p>
+          ) : (
+            <ul className="mt-3 space-y-3">
+              {profile.ratings.map((r) => (
+                <li key={r.id} className="rounded-md border border-border p-4">
+                  <p className="text-sm font-semibold">
+                    {"★".repeat(r.rating)} · {r.requesterName} · {r.date}
+                  </p>
+                  {r.comment ? <p className="mt-1 text-sm">“{r.comment}”</p> : null}
+                </li>
+              ))}
+            </ul>
+          )}
+
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <Link to="/requests" className={buttonClass("primary", "md")}>
               Browse requests
             </Link>
-            <Button variant="outline" onClick={() => setSaved(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setStep(1);
+                setEditing(true);
+              }}
+            >
               Edit profile
             </Button>
           </div>
@@ -77,104 +135,267 @@ function VolunteerPage() {
     );
   }
 
+  const step1Valid = name && intro && cats.length > 0;
+  const step2Valid = phoneVerified && emergency.trim().length > 3 && coc;
+
   return (
     <Section className="max-w-2xl">
-      <h1 className="text-3xl sm:text-4xl">Create your volunteer profile</h1>
+      <p className="text-sm font-semibold text-primary">Step {step} of 2</p>
+      <h1 className="mt-1 text-3xl sm:text-4xl">
+        {step === 1 ? "Create your volunteer profile" : "Verify and stay safe"}
+      </h1>
       <p className="mt-2 text-muted-foreground">
-        A friendly introduction helps neighbours feel comfortable asking for help.
+        {step === 1
+          ? "A friendly introduction helps neighbours feel comfortable asking for help."
+          : "These checks help neighbours trust that every volunteer is who they say they are."}
       </p>
 
-      <div className="card-soft mt-6 space-y-5 p-6 sm:p-8">
-        <Field label="First name">
-          <input
-            className={inputClass}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Daniel"
-          />
-        </Field>
-        <Field label="Photo" hint="Pick an avatar for now.">
-          <div className="flex flex-wrap gap-2">
-            {EMOJIS.map((e) => (
-              <button
-                key={e}
-                onClick={() => setPhoto(e)}
-                className={cn(
-                  "grid h-12 w-12 place-items-center rounded-full border text-2xl transition",
-                  photo === e ? "border-primary bg-primary-soft" : "border-border",
-                )}
+      {step === 1 ? (
+        <div className="card-soft mt-6 space-y-5 p-6 sm:p-8">
+          <Field label="First name">
+            <input
+              className={inputClass}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Daniel"
+            />
+          </Field>
+          <Field label="Photo" hint="Pick an avatar for now.">
+            <div className="flex flex-wrap gap-2">
+              {EMOJIS.map((e) => (
+                <button
+                  type="button"
+                  key={e}
+                  onClick={() => setPhoto(e)}
+                  className={cn(
+                    "grid h-12 w-12 place-items-center rounded-full border text-2xl transition",
+                    photo === e ? "border-primary bg-primary-soft" : "border-border",
+                  )}
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field label="Neighbourhood">
+            <select
+              className={inputClass}
+              value={neighbourhood}
+              onChange={(e) => setNeighbourhood(e.target.value)}
+            >
+              {NEIGHBOURHOODS.map((n) => (
+                <option key={n}>{n}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Short introduction">
+            <textarea
+              className={cn(inputClass, "min-h-24")}
+              value={intro}
+              onChange={(e) => setIntro(e.target.value)}
+              placeholder="I enjoy helping older people with errands and companionship."
+            />
+          </Field>
+          <Field label="Categories I can help with">
+            <div className="flex flex-wrap gap-2">
+              {CATEGORIES.map((c) => (
+                <button
+                  type="button"
+                  key={c.id}
+                  onClick={() => toggle(c.id)}
+                  className={cn(
+                    "rounded-md border px-4 py-2 text-sm font-medium transition",
+                    cats.includes(c.id)
+                      ? "border-primary bg-secondary-soft text-secondary-foreground"
+                      : "border-border hover:bg-muted",
+                  )}
+                >
+                  {c.emoji} {c.label}
+                </button>
+              ))}
+            </div>
+          </Field>
+          <Field label="Availability">
+            <select
+              className={inputClass}
+              value={availability}
+              onChange={(e) => setAvailability(e.target.value)}
+            >
+              {["Weekday mornings", "Weekday evenings", "Weekends", "Flexible"].map((a) => (
+                <option key={a}>{a}</option>
+              ))}
+            </select>
+          </Field>
+          <Button size="lg" disabled={!step1Valid} onClick={() => setStep(2)}>
+            Continue
+          </Button>
+        </div>
+      ) : (
+        <div className="card-soft mt-6 space-y-5 p-6 sm:p-8">
+          <Field label="Mobile number" hint="We'll send a 6-digit code by SMS (demo: any 6 digits).">
+            <div className="flex gap-2">
+              <input
+                className={inputClass}
+                value={phone}
+                disabled={phoneVerified}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+65 9123 4567"
+                inputMode="tel"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={phoneVerified || phone.replace(/\D/g, "").length < 8}
+                onClick={() => setOtpSent(true)}
               >
-                {e}
-              </button>
-            ))}
+                {otpSent ? "Resend" : "Send code"}
+              </Button>
+            </div>
+          </Field>
+          {phoneVerified ? (
+            <p className="text-sm font-semibold text-primary">✓ Phone number verified</p>
+          ) : otpSent ? (
+            <Field label="Enter code">
+              <div className="flex gap-2">
+                <input
+                  className={inputClass}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="123456"
+                  inputMode="numeric"
+                />
+                <Button type="button" disabled={otp.length !== 6} onClick={() => setPhoneVerified(true)}>
+                  Verify
+                </Button>
+              </div>
+            </Field>
+          ) : null}
+          <Field label="Emergency contact" hint="Name and phone number. Kept private.">
+            <input
+              className={inputClass}
+              value={emergency}
+              onChange={(e) => setEmergency(e.target.value)}
+              placeholder="Alex (brother) · +65 8123 4567"
+            />
+          </Field>
+          <label className="flex items-start gap-3 rounded-md bg-primary-soft/60 p-4 text-sm">
+            <input
+              type="checkbox"
+              className="mt-1 h-4 w-4 accent-[var(--primary)]"
+              checked={coc}
+              onChange={(e) => setCoc(e.target.checked)}
+            />
+            <span>
+              <strong>HelpSG Community Code of Conduct.</strong> I agree to treat neighbours with
+              dignity, follow safety guidelines, and never handle medical tasks.
+            </span>
+          </label>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button variant="outline" onClick={() => setStep(1)}>
+              Back
+            </Button>
+            <Button
+              size="lg"
+              disabled={!step2Valid}
+              onClick={() => {
+                actions.saveProfile({
+                  name,
+                  neighbourhood,
+                  intro,
+                  categories: cats,
+                  availability,
+                  photo,
+                  status: profile?.status ?? "pending",
+                  trustTier: profile?.trustTier ?? "tier_1_errands",
+                  ratings: profile?.ratings ?? [],
+                  metrics: profile?.metrics ?? {
+                    completedTasks: 0,
+                    ratingAverage: 0,
+                    punctualityRate: 0,
+                  },
+                  verificationDetails: {
+                    phoneVerified,
+                    codeOfConductAccepted: coc,
+                    emergencyContact: emergency,
+                  },
+                });
+                setEditing(false);
+              }}
+            >
+              {profile ? "Save Profile" : "Submit for Review"}
+            </Button>
           </div>
-        </Field>
-        <Field label="Neighbourhood">
-          <select
-            className={inputClass}
-            value={neighbourhood}
-            onChange={(e) => setNeighbourhood(e.target.value)}
-          >
-            {NEIGHBOURHOODS.map((n) => (
-              <option key={n}>{n}</option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Short introduction">
-          <textarea
-            className={cn(inputClass, "min-h-24")}
-            value={intro}
-            onChange={(e) => setIntro(e.target.value)}
-            placeholder="I enjoy helping older people with errands and companionship."
-          />
-        </Field>
-        <Field label="Categories I can help with">
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => toggle(c.id)}
-                className={cn(
-                  "rounded-full border px-4 py-2 text-sm font-medium transition",
-                  cats.includes(c.id)
-                    ? "border-secondary bg-secondary-soft text-secondary-foreground"
-                    : "border-border hover:bg-muted",
-                )}
-              >
-                {c.emoji} {c.label}
-              </button>
-            ))}
-          </div>
-        </Field>
-        <Field label="Availability">
-          <select
-            className={inputClass}
-            value={availability}
-            onChange={(e) => setAvailability(e.target.value)}
-          >
-            {["Weekday mornings", "Weekday evenings", "Weekends", "Flexible"].map((a) => (
-              <option key={a}>{a}</option>
-            ))}
-          </select>
-        </Field>
-        <Button
-          size="lg"
-          disabled={!name || !intro || cats.length === 0}
-          onClick={() => {
-            actions.saveProfile({
-              name,
-              neighbourhood,
-              intro,
-              categories: cats,
-              availability,
-              photo,
-            });
-            setSaved(true);
-          }}
-        >
-          Create Profile
-        </Button>
-      </div>
+        </div>
+      )}
     </Section>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="font-display text-xl font-semibold">{value}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
+function StatusBanner({ status, tier }: { status: VolunteerStatus; tier: string }) {
+  if (status === "approved") {
+    return (
+      <div className="rounded-md bg-primary p-5 text-primary-foreground">
+        <p className="font-display text-lg font-semibold">✓ Verified Community Volunteer</p>
+        <p className="mt-1 text-sm opacity-90">{tier}</p>
+      </div>
+    );
+  }
+  if (status === "flagged") {
+    return (
+      <div className="rounded-md bg-accent-soft p-5 text-accent-foreground">
+        <p className="font-semibold">Your profile is paused for a quick review</p>
+        <p className="mt-1 text-sm">
+          A community lead will reach out soon. You can still browse requests in the meantime.
+        </p>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-md bg-accent-soft p-5 text-accent-foreground">
+      <p className="font-semibold">Application under review</p>
+      <p className="mt-1 text-sm">
+        Your application is under review by community leads. You can browse requests, but
+        accepting vulnerable tasks requires verification.
+      </p>
+    </div>
+  );
+}
+
+function AdminSimulation({ status }: { status: VolunteerStatus }) {
+  const opts: { id: VolunteerStatus; label: string }[] = [
+    { id: "pending", label: "Pending Approval" },
+    { id: "approved", label: "Approved (Verified)" },
+    { id: "flagged", label: "Flagged" },
+  ];
+  return (
+    <div className="mt-3 rounded-md border border-dashed border-border p-3 text-sm">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Admin simulation (demo only)
+      </p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {opts.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            onClick={() => actions.setProfileStatus(o.id)}
+            className={cn(
+              "rounded-md border px-3 py-1.5 text-xs font-semibold transition",
+              status === o.id ? "border-primary bg-primary-soft text-primary" : "border-border hover:bg-muted",
+            )}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

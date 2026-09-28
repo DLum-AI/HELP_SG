@@ -132,3 +132,45 @@ export function RequestCard({ request }: { request: HelpRequest }) {
     </div>
   );
 }
+
+export function VolunteerCredentials({
+  volunteer,
+}: {
+  volunteer: import("@/lib/store").VolunteerProfile;
+}) {
+  const topTags = Object.entries(
+    volunteer.ratings.flatMap((r) => r.tags).reduce<Record<string, number>>((a, t) => {
+      a[t] = (a[t] ?? 0) + 1;
+      return a;
+    }, {}),
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 2)
+    .map(([t]) => t);
+  return (
+    <div className="flex flex-col gap-1.5">
+      <p className="text-sm font-semibold">
+        {volunteer.status === "approved" ? (
+          <span className="text-primary">✓ Verified Volunteer ({volunteer.neighbourhood})</span>
+        ) : volunteer.status === "flagged" ? (
+          <span className="text-muted-foreground">Under review</span>
+        ) : (
+          <span className="text-muted-foreground">Verification pending</span>
+        )}
+      </p>
+      <p className="text-sm text-muted-foreground">
+        {volunteer.metrics.ratingAverage > 0 ? `★ ${volunteer.metrics.ratingAverage} · ` : ""}
+        {volunteer.metrics.completedTasks} requests completed
+      </p>
+      {topTags.length ? (
+        <div className="flex flex-wrap gap-1.5">
+          {topTags.map((t) => (
+            <Badge key={t} tone="secondary">
+              {t}
+            </Badge>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
