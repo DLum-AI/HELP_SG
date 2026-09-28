@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Badge, Button, Section, buttonClass } from "@/components/ui-kit";
-import { actions, category, useStore, type HelpRequest } from "@/lib/store";
+import { Badge, Button, Section, VolunteerCredentials, buttonClass } from "@/components/ui-kit";
+import { actions, category, findVolunteer, useStore, type HelpRequest } from "@/lib/store";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -46,7 +46,8 @@ function Row({ request, children }: { request: HelpRequest; children?: React.Rea
 }
 
 function Dashboard() {
-  const { requests, messages, profile } = useStore();
+  const store = useStore();
+  const { requests, messages, profile } = store;
   const mine = requests.filter((r) => r.mine);
   const withOffers = mine.filter((r) => r.offers.length > 0 && r.status === "open");
   const upcomingMine = mine.filter((r) => r.status === "matched");
@@ -98,13 +99,23 @@ function Dashboard() {
           {withOffers.length === 0 ? (
             <p className="text-sm text-muted-foreground">No new offers right now.</p>
           ) : (
-            withOffers.map((r) => (
-              <Row key={r.id} request={r}>
-                <Button size="sm" onClick={() => actions.acceptOffer(r.id, r.offers[0]!)}>
-                  Accept {r.offers[0]}
-                </Button>
-              </Row>
-            ))
+            withOffers.map((r) => {
+              const v = findVolunteer(store, r.offers[0]!);
+              return (
+                <div key={r.id} className="space-y-2">
+                  <Row request={r}>
+                    <Button size="sm" onClick={() => actions.acceptOffer(r.id, r.offers[0]!)}>
+                      Accept {r.offers[0]}
+                    </Button>
+                  </Row>
+                  {v ? (
+                    <div className="ml-4 rounded-md border-l-4 border-primary bg-card p-3">
+                      <VolunteerCredentials volunteer={v} />
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })
           )}
 
           <h2 className="pt-4 text-xl">Upcoming help</h2>

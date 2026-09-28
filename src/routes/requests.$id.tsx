@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Badge, Button, Section, buttonClass } from "@/components/ui-kit";
-import { actions, category, useStore } from "@/lib/store";
+import { useState } from "react";
+import { Badge, Button, Section, VolunteerCredentials, buttonClass } from "@/components/ui-kit";
+import { actions, canHelpWith, category, findVolunteer, useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/requests/$id")({
   head: () => ({
@@ -22,8 +23,10 @@ export const Route = createFileRoute("/requests/$id")({
 
 function RequestDetail() {
   const { id } = Route.useParams();
-  const { requests } = useStore();
+  const store = useStore();
+  const { requests } = store;
   const navigate = useNavigate();
+  const [blocked, setBlocked] = useState(false);
   const request = requests.find((r) => r.id === id);
 
   if (!request) {
@@ -39,6 +42,7 @@ function RequestDetail() {
 
   const cat = category(request.category);
   const offered = request.offers.includes("You");
+  const allowed = canHelpWith(store.profile, request.category);
 
   return (
     <Section className="max-w-3xl">
@@ -76,25 +80,62 @@ function RequestDetail() {
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-          <Button
-            disabled={offered || request.status !== "open"}
-            onClick={() => {
-              actions.offerHelp(request.id);
-              navigate({ to: "/messages/$id", params: { id: request.id } });
-            }}
-            size="lg"
-          >
-            {offered ? "Offer sent ❤" : "I Can Help"}
-          </Button>
-          <Link
-            to="/messages/$id"
-            params={{ id: request.id }}
-            className={buttonClass("outline", "lg")}
-          >
-            Message
-          </Link>
-        </div>
+        {request.mine && request.offers.length > 0 ? (
+          <div className="mt-6 space-y-3">
+            <h2 className="text-xl">Volunteers who offered</h2>
+            {request.offers.map((name) => {
+              const v = findVolunteer(store, name);
+              return (
+                <div key={name} className="flex items-start gap-3 rounded-md border border-border p-4">
+                  <span className="text-2xl" aria-hidden>{v?.photo ?? "🙂"}</span>
+                  <div className="flex-1">
+                    <p className="font-semibold">{name}</p>
+                    {v ? <VolunteerCredentials volunteer={v} /> : null}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {!request.mine ? (
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Button
+              disabled={offered || request.status !== "open"}
+              onClick={() => {
+                if (!allowed) {
+                  setBlocked(true);
+                  return;
+                }
+                actions.offerHelp(request.id);
+                navigate({ to: "/messages/$id", params: { id: request.id } });
+              }}
+              size="lg"
+            >
+              {offered ? "Offer sent ❤" : "I Can Help"}
+            </Button>
+            <Link
+              to="/messages/$id"
+              params={{ id: request.id }}
+              className={buttonClass("outline", "lg")}
+            >
+              Message
+            </Link>
+          </div>
+        ) : null}
+
+        {blocked ? (
+          <div role="alert" className="mt-4 rounded-md border border-primary bg-primary-soft/60 p-4 text-sm">
+            <p className="font-semibold">Verification needed for this request</p>
+            <p className="mt-1">
+              To protect vulnerable neighbours, Companionship &amp; Home Help require an approved
+              volunteer profile. You can still help with Groceries &amp; Meals or Pet Care.
+            </p>
+            <Link to="/volunteer" className={buttonClass("primary", "sm", "mt-3")}>
+              {store.profile ? "View my verification status" : "Create volunteer profile"}
+            </Link>
+          </div>
+        ) : null}
 
         <p className="mt-6 rounded-2xl bg-accent-soft p-4 text-sm text-accent-foreground">
           Safety reminder: meet in a public place first, keep chats inside HelpSG, and never
