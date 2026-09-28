@@ -69,6 +69,8 @@ export type HelpRequest = {
   offers: string[];
   acceptedVolunteer?: string;
   thanks?: { mood: string; note: string };
+  /** Private — only revealed to a volunteer after they offer help. */
+  contact?: { email: string; phone: string; phoneVerified: boolean };
 };
 
 export type Message = {
@@ -286,7 +288,14 @@ const seedRequests: HelpRequest[] = [
 ];
 
 let state: State = {
-  requests: seedRequests,
+  requests: seedRequests.map((r, i) => ({
+    ...r,
+    contact: {
+      email: `${r.requesterName.toLowerCase().replace(/[^a-z]/g, "")}@example.com`,
+      phone: `+65 9${String(1000000 + i * 1234567).slice(0, 3)} ${String(4000 + i * 111)}`,
+      phoneVerified: true,
+    },
+  })),
   messages: [
     {
       id: "m1",

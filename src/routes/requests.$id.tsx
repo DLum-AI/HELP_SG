@@ -80,6 +80,32 @@ function RequestDetail() {
           </div>
         </div>
 
+        {!request.mine && request.contact ? (
+          offered ? (
+            <div className="mt-4 rounded-md border border-primary bg-primary-soft/60 p-4 text-sm">
+              <p className="font-semibold">Contact details (shared because you offered to help)</p>
+              <p className="mt-1">
+                Email:{" "}
+                <a className="underline" href={`mailto:${encodeURIComponent(request.contact.email)}`}>
+                  {request.contact.email}
+                </a>
+              </p>
+              <p>
+                Phone:{" "}
+                <a className="underline" href={`tel:${request.contact.phone.replace(/[^\d+]/g, "")}`}>
+                  {request.contact.phone}
+                </a>
+                {request.contact.phoneVerified ? " · ✓ verified" : ""}
+              </p>
+            </div>
+          ) : (
+            <p className="mt-4 rounded-md bg-muted p-4 text-sm text-muted-foreground">
+              🔒 {request.requesterName}'s email and phone are private. They'll be shown to you once
+              you tap "I Can Help".
+            </p>
+          )
+        ) : null}
+
         {request.mine && request.offers.length > 0 ? (
           <div className="mt-6 space-y-3">
             <h2 className="text-xl">Volunteers who offered</h2>
