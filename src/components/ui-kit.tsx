@@ -43,18 +43,31 @@ export function Button({
 export function Field({
   label,
   hint,
+  required,
   children,
 }: {
   label: string;
   hint?: string;
+  required?: boolean;
   children: ReactNode;
 }) {
   return (
     <label className="block space-y-1.5">
-      <span className="text-sm font-semibold text-foreground">{label}</span>
+      <span className="text-sm font-semibold text-foreground">
+        {label}
+        {required ? <span className="ml-0.5 text-destructive" aria-hidden>*</span> : null}
+      </span>
       {children}
       {hint ? <span className="block text-xs text-muted-foreground">{hint}</span> : null}
     </label>
+  );
+}
+
+export function RequiredLegend() {
+  return (
+    <p className="text-xs text-muted-foreground">
+      Fields marked <span className="text-destructive" aria-hidden>*</span> are required.
+    </p>
   );
 }
 

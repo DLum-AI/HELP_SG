@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { HandHeart, Heart, House, MessageCircle, Search, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { buttonClass } from "./ui-kit";
+import { HelpBot } from "./HelpBot";
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -64,6 +65,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       </header>
 
       <main className="flex-1 pb-24 md:pb-0">{children}</main>
+
+      <HelpBot />
 
       <footer className="hidden border-t border-border bg-card/60 py-8 md:block">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-5 text-sm text-muted-foreground">

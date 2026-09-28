@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Button, Field, Section, inputClass } from "@/components/ui-kit";
+import { Button, Field, RequiredLegend, Section, inputClass } from "@/components/ui-kit";
 import { DatePicker, TimePicker } from "@/components/date-time";
 import { CATEGORIES, NEIGHBOURHOODS, actions, type CategoryId } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -96,7 +96,8 @@ function NewRequest() {
         {step === 2 && (
           <>
             <h1 className="text-2xl">Tell us more</h1>
-            <Field label="Request title">
+            <RequiredLegend />
+            <Field label="Request title" required>
               <input
                 className={inputClass}
                 value={form.title}
@@ -104,7 +105,7 @@ function NewRequest() {
                 placeholder="Accompany me to the polyclinic"
               />
             </Field>
-            <Field label="Description">
+            <Field label="Description" required>
               <textarea
                 className={cn(inputClass, "min-h-28")}
                 value={form.description}
@@ -133,8 +134,9 @@ function NewRequest() {
         {step === 3 && (
           <>
             <h1 className="text-2xl">When & where?</h1>
+            <RequiredLegend />
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Date" hint="Pick a single day, or a range if you're flexible.">
+              <Field label="Date" required hint="Pick a single day, or a range if you're flexible.">
                 <DatePicker
                   range
                   value={form.date}
@@ -142,13 +144,13 @@ function NewRequest() {
                   placeholder="Pick a date or range"
                 />
               </Field>
-              <Field label="Time">
+              <Field label="Time" required>
                 <TimePicker
                   value={form.time}
                   onChange={(v) => update("time", v)}
                 />
               </Field>
-              <Field label="Estimated duration">
+              <Field label="Estimated duration" required>
                 <select
                   className={inputClass}
                   value={form.duration}
@@ -161,7 +163,7 @@ function NewRequest() {
                   )}
                 </select>
               </Field>
-              <Field label="Neighbourhood" hint="Your exact address is never shown publicly.">
+              <Field label="Neighbourhood" required hint="Your exact address is never shown publicly.">
                 <select
                   className={inputClass}
                   value={form.neighbourhood}
