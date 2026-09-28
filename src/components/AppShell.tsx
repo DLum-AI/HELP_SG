@@ -65,6 +65,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       <main className="flex-1 pb-24 md:pb-0">{children}</main>
 
+      <HelpBot />
+
       <footer className="hidden border-t border-border bg-card/60 py-8 md:block">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-5 text-sm text-muted-foreground">
           <p>HelpSG · Sometimes, a little help goes a long way.</p>
