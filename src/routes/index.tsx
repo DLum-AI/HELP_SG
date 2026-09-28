@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Heart, House, PawPrint, ShoppingBasket } from "lucide-react";
 import heroImage from "@/assets/hero-community.jpg";
 import { buttonClass, Section } from "@/components/ui-kit";
 import { CATEGORIES } from "@/lib/store";
@@ -28,6 +29,7 @@ const steps = [
   { n: "2", title: "Connect with a volunteer", text: "Neighbours offer to lend a hand." },
   { n: "3", title: "Get it done", text: "Meet up, help out, and say thank you." },
 ];
+const categoryIcons = { home: House, groceries: ShoppingBasket, pets: PawPrint, companionship: Heart };
 
 function Index() {
   return (
@@ -76,7 +78,9 @@ function Index() {
           </Link>
         </div>
         <div className="mt-8 grid grid-cols-2 border-y border-border lg:grid-cols-4">
-          {CATEGORIES.map((c, i) => (
+          {CATEGORIES.map((c, i) => {
+            const Icon = categoryIcons[c.id];
+            return (
             <Link
               key={c.id}
               to="/requests"
@@ -86,12 +90,13 @@ function Index() {
               <span className="font-display text-2xl font-semibold text-primary/65">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <span aria-hidden className="mt-6 text-2xl">{c.emoji}</span>
+              <Icon aria-hidden="true" size={28} strokeWidth={1.7} className="mt-6 text-primary" />
               <h3 className="mt-3 text-xl font-semibold text-primary sm:text-2xl">{c.label}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{c.blurb}</p>
               <span aria-hidden className="mt-auto pt-4 text-lg text-primary transition-transform group-hover:translate-x-1">↗</span>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </Section>
 

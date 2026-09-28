@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { HandHeart, Heart, House, MessageCircle, Search, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { buttonClass } from "./ui-kit";
 
@@ -11,11 +12,11 @@ const navLinks = [
 ] as const;
 
 const mobileTabs = [
-  { to: "/", label: "Home", icon: "🏡" },
-  { to: "/requests", label: "Requests", icon: "🔎" },
-  { to: "/volunteer", label: "Volunteer", icon: "🤝" },
-  { to: "/messages", label: "Messages", icon: "💬" },
-  { to: "/dashboard", label: "Profile", icon: "🙂" },
+  { to: "/", label: "Home", icon: House },
+  { to: "/requests", label: "Requests", icon: Search },
+  { to: "/volunteer", label: "Volunteer", icon: HandHeart },
+  { to: "/messages", label: "Messages", icon: MessageCircle },
+  { to: "/dashboard", label: "Profile", icon: UserRound },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -25,7 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
          <div className="mx-auto flex w-full max-w-7xl items-center gap-4 px-5 py-4">
            <Link to="/" className="flex items-center gap-2 text-primary">
              <span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground">
-              ❤
+               <Heart size={16} fill="currentColor" aria-hidden="true" />
             </span>
              <span className="font-display text-xl font-bold">HelpSG</span>
           </Link>
@@ -88,9 +89,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               activeProps={{ className: "text-primary" }}
               className="flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium text-muted-foreground"
             >
-              <span aria-hidden className="text-lg">
-                {t.icon}
-              </span>
+               <t.icon aria-hidden="true" size={20} strokeWidth={1.8} />
               {t.label}
             </Link>
           ))}
