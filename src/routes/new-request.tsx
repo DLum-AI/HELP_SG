@@ -42,6 +42,9 @@ function NewRequest() {
   const update = (k: keyof typeof form, v: string | boolean) =>
     setForm((f) => ({ ...f, [k]: v }));
 
+  const [name, setName] = useState("");
+  const [photo, setPhoto] = useState("");
+  const [photoError, setPhotoError] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -51,11 +54,29 @@ function NewRequest() {
   const phoneDigits = phone.replace(/\D/g, "");
   const phoneValid = phoneDigits.length >= 8 && phoneDigits.length <= 15;
 
+  const onPhoto = (file: File | undefined) => {
+    setPhotoError("");
+    if (!file) return;
+    if (!/^image\/(jpeg|png)$/.test(file.type)) {
+      setPhotoError("Please choose a JPG or PNG image.");
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      setPhotoError("Please choose an image under 3 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setPhoto(String(reader.result));
+    reader.readAsDataURL(file);
+  };
+
   const submit = () => {
-    if (!cat || !emailValid || !phoneVerified) return;
+    if (!cat || !name.trim() || !emailValid || !phoneVerified) return;
     const id = actions.createRequest({
       ...form,
       category: cat,
+      requesterName: name.trim(),
+      ...(photo ? { requesterPhoto: photo } : {}),
       contact: { email: email.trim(), phone: phone.trim(), phoneVerified },
     });
     navigate({ to: "/requests/$id", params: { id } });
@@ -201,9 +222,45 @@ function NewRequest() {
               <div>
                 <p className="font-semibold">Your contact details</p>
                 <p className="text-sm text-muted-foreground">
-                  Kept private — never shown publicly. Only shared with a volunteer after they offer to help.
+                  Your email and phone stay private — only shared with a volunteer after they offer to help.
                 </p>
               </div>
+              <Field label="Your name" required hint="Shown publicly on your request.">
+                <input
+                  className={inputClass}
+                  value={name}
+                  maxLength={60}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Sarah"
+                />
+              </Field>
+              <Field label="Your photo" hint="Optional — helps volunteers recognise you. JPG or PNG, under 3 MB.">
+                <div className="flex items-center gap-3">
+                  {photo ? (
+                    <img
+                      src={photo}
+                      alt="Your photo preview"
+                      className="h-14 w-14 rounded-full border border-border object-cover"
+                    />
+                  ) : (
+                    <span className="grid h-14 w-14 place-items-center rounded-full bg-muted text-xl text-muted-foreground">
+                      ?
+                    </span>
+                  )}
+                  <label className={cn(inputClass, "cursor-pointer text-sm")}>
+                    {photo ? "Change photo" : "Upload photo"}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png"
+                      className="hidden"
+                      onChange={(e) => onPhoto(e.target.files?.[0])}
+                    />
+                  </label>
+                </div>
+                {photoError ? (
+                  <span className="block text-sm text-destructive">{photoError}</span>
+                ) : null}
+              </Field>
               <Field label="Email" required>
                 <input
                   className={inputClass}
@@ -262,7 +319,7 @@ function NewRequest() {
                 Back
               </Button>
               <Button
-                disabled={!form.date || !form.time || !emailValid || !phoneVerified}
+                disabled={!form.date || !form.time || !name.trim() || !emailValid || !phoneVerified}
                 onClick={submit}
                 size="lg"
               >
