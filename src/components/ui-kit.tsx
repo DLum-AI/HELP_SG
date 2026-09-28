@@ -63,6 +63,14 @@ export function Field({
   );
 }
 
+export function RequiredLegend() {
+  return (
+    <p className="text-xs text-muted-foreground">
+      Fields marked <span className="text-destructive" aria-hidden>*</span> are required.
+    </p>
+  );
+}
+
 export const inputClass =
   "w-full rounded-md border border-input bg-card px-4 py-3 text-base text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/25 placeholder:text-muted-foreground";
 
