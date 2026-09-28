@@ -34,36 +34,36 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Fraunces", Georgia, serif;
-  --shadow-soft: 0 1px 2px oklch(0.45 0.05 220 / 0.05), 0 12px 30px -18px oklch(0.45 0.08 220 / 0.35);
-  --shadow-lift: 0 18px 40px -22px oklch(0.45 0.08 220 / 0.45);
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --shadow-soft: 0 2px 12px -8px color-mix(in oklab, var(--primary) 25%, transparent);
+  --shadow-lift: 0 12px 28px -18px color-mix(in oklab, var(--primary) 35%, transparent);
 }
 
 :root {
-  --radius: 1.1rem;
-  --background: oklch(0.985 0.008 95);
-  --foreground: oklch(0.27 0.03 230);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.27 0.03 230);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.27 0.03 230);
-  --primary: oklch(0.58 0.09 205);
-  --primary-foreground: oklch(0.99 0.005 95);
-  --primary-soft: oklch(0.94 0.03 200);
-  --secondary: oklch(0.68 0.11 150);
-  --secondary-foreground: oklch(0.24 0.04 160);
-  --secondary-soft: oklch(0.945 0.04 150);
-  --muted: oklch(0.96 0.01 95);
-  --muted-foreground: oklch(0.52 0.02 230);
-  --accent: oklch(0.82 0.14 78);
-  --accent-foreground: oklch(0.3 0.06 60);
-  --accent-soft: oklch(0.955 0.045 85);
+  --radius: 0.5rem;
+  --background: #F8FAF6;
+  --foreground: #19382f;
+  --card: #ffffff;
+  --card-foreground: #19382f;
+  --popover: #ffffff;
+  --popover-foreground: #19382f;
+  --primary: #176B5B;
+  --primary-foreground: #F8FAF6;
+  --primary-soft: #DDEBDD;
+  --secondary: #DDEBDD;
+  --secondary-foreground: #176B5B;
+  --secondary-soft: #DDEBDD;
+  --muted: #edf3eb;
+  --muted-foreground: #50645d;
+  --accent: #EFBE71;
+  --accent-foreground: #19382f;
+  --accent-soft: #fcf1df;
   --destructive: oklch(0.58 0.19 25);
   --destructive-foreground: oklch(0.99 0.005 95);
-  --border: oklch(0.91 0.012 210);
-  --input: oklch(0.91 0.012 210);
-  --ring: oklch(0.58 0.09 205);
+  --border: #cbdcd1;
+  --input: #cbdcd1;
+  --ring: #176B5B;
 }
 
 @layer base {
@@ -83,13 +83,13 @@
   h3 {
     font-family: var(--font-display);
     font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
   }
 }
 
 @utility card-soft {
   background-color: var(--color-card);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
 }
