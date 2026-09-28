@@ -21,13 +21,13 @@ const mobileTabs = [
 export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-5 py-3">
-          <Link to="/" className="flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
+       <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
+         <div className="mx-auto flex w-full max-w-7xl items-center gap-4 px-5 py-4">
+           <Link to="/" className="flex items-center gap-2 text-primary">
+             <span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground">
               ❤
             </span>
-            <span className="font-display text-xl font-semibold">HelpSG</span>
+             <span className="font-display text-xl font-bold">HelpSG</span>
           </Link>
           <nav className="ml-6 hidden items-center gap-1 md:flex">
             {navLinks.map((l) => (
@@ -35,8 +35,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                 key={l.to}
                 to={l.to}
                 activeOptions={{ exact: l.to === "/" }}
-                activeProps={{ className: "bg-muted text-foreground" }}
-                className="rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition hover:text-foreground"
+                 activeProps={{ className: "text-primary bg-primary-soft" }}
+                 className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition hover:text-primary"
               >
                 {l.label}
               </Link>
@@ -45,13 +45,13 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="ml-auto flex items-center gap-2">
             <Link
               to="/messages"
-              className="hidden rounded-full px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground md:inline-flex"
+               className="hidden rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary md:inline-flex"
             >
               Messages
             </Link>
             <Link
               to="/dashboard"
-              className="hidden rounded-full px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground md:inline-flex"
+               className="hidden rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary md:inline-flex"
             >
               Profile
             </Link>

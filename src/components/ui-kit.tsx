@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { category, type HelpRequest } from "@/lib/store";
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-full text-base font-semibold transition-all disabled:opacity-50 disabled:pointer-events-none";
+  "inline-flex items-center justify-center gap-2 rounded-md text-base font-semibold transition-all disabled:opacity-50 disabled:pointer-events-none";
 
 const variants = {
   primary: "bg-primary text-primary-foreground hover:brightness-110 shadow-[var(--shadow-soft)]",
@@ -59,7 +59,7 @@ export function Field({
 }
 
 export const inputClass =
-  "w-full rounded-xl border border-input bg-card px-4 py-3 text-base text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/25 placeholder:text-muted-foreground";
+  "w-full rounded-md border border-input bg-card px-4 py-3 text-base text-foreground outline-none transition focus:border-primary focus:ring-2 focus:ring-ring/25 placeholder:text-muted-foreground";
 
 export function Badge({
   children,
@@ -77,7 +77,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold",
+        "inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-semibold",
         tones[tone],
       )}
     >
