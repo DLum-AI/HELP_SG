@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Badge, Button, Field, Section, buttonClass, inputClass } from "@/components/ui-kit";
+import { Badge, Button, Field, RequiredLegend, Section, buttonClass, inputClass } from "@/components/ui-kit";
 import {
   CATEGORIES,
   NEIGHBOURHOODS,
