@@ -34,12 +34,23 @@ function BrowseRequests() {
   const [area, setArea] = useState("all");
   const [date, setDate] = useState("");
 
+  // Match a request's display date ("Friday, 2 Oct") against the picked
+  // day or range ("Fri, 2 Oct" / "2 Oct – 5 Oct") by day-of-month.
+  const dateMatches = (requestDate: string) => {
+    if (!date) return true;
+    const days = [...date.matchAll(/(\d{1,2}) (\w{3})/g)].map((m) => m[1]!);
+    if (days.length === 0) return true;
+    const [lo, hi] = [Math.min(...days.map(Number)), Math.max(...days.map(Number))];
+    const reqDay = Number(requestDate.match(/(\d{1,2}) \w{3}/)?.[1]);
+    return !Number.isNaN(reqDay) && reqDay >= lo && reqDay <= hi;
+  };
+
   const visible = requests.filter(
     (r) =>
       r.status !== "completed" &&
       (cat === "all" || r.category === cat) &&
       (area === "all" || r.neighbourhood === area) &&
-      (!date || r.date.toLowerCase().includes(date.toLowerCase())),
+      dateMatches(r.date),
   );
 
   return (
@@ -76,12 +87,11 @@ function BrowseRequests() {
             </option>
           ))}
         </select>
-        <input
-          className={inputClass}
-          placeholder="Any day (e.g. Friday)"
+        <DatePicker
+          range
           value={date}
-          onChange={(e) => setDate(e.target.value)}
-          aria-label="Date"
+          onChange={setDate}
+          placeholder="Any date or range"
         />
       </div>
 
