@@ -31,7 +31,26 @@ export const Route = createFileRoute("/volunteer")({
   component: VolunteerPage,
 });
 
-const EMOJIS = ["🙂", "😀", "🧑", "👩", "👳", "🧕", "👨‍🦳"];
+function isPhotoImage(photo: string) {
+  return photo.startsWith("data:image");
+}
+
+function VolunteerPhoto({ photo, name, size = "h-20 w-20" }: { photo: string; name: string; size?: string }) {
+  if (isPhotoImage(photo)) {
+    return (
+      <img
+        src={photo}
+        alt={`Photo of ${name}`}
+        className={cn(size, "rounded-full border border-border object-cover")}
+      />
+    );
+  }
+  return (
+    <span className={cn("grid place-items-center rounded-full bg-primary-soft text-4xl", size)} aria-hidden>
+      {photo}
+    </span>
+  );
+}
 
 function VolunteerPage() {
   const { profile } = useStore();
@@ -42,7 +61,24 @@ function VolunteerPage() {
     profile?.neighbourhood ?? NEIGHBOURHOODS[0]!,
   );
   const [intro, setIntro] = useState(profile?.intro ?? "");
-  const [photo, setPhoto] = useState(profile?.photo ?? EMOJIS[0]!);
+  const [photo, setPhoto] = useState(profile?.photo ?? "");
+  const [photoError, setPhotoError] = useState("");
+
+  const onPhotoPick = (file: File | null) => {
+    setPhotoError("");
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Please choose an image file (JPG or PNG).");
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      setPhotoError("Photo must be smaller than 3 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setPhoto(String(reader.result));
+    reader.readAsDataURL(file);
+  };
   const [availability, setAvailability] = useState(profile?.availability ?? "Weekends");
   const [cats, setCats] = useState<CategoryId[]>(profile?.categories ?? []);
   const [phone, setPhone] = useState("");
@@ -65,9 +101,7 @@ function VolunteerPage() {
         <StatusBanner status={profile.status} tier={TIER_LABEL[profile.trustTier]} />
         <AdminSimulation status={profile.status} />
         <div className="card-soft mt-6 p-6 sm:p-8">
-          <span className="text-5xl" aria-hidden>
-            {profile.photo}
-          </span>
+          <VolunteerPhoto photo={profile.photo} name={profile.name} />
           <h1 className="mt-3 text-3xl">{profile.name}</h1>
           <p className="text-muted-foreground">{profile.neighbourhood}</p>
           <p className="mt-4 text-foreground/85">“{profile.intro}”</p>
@@ -135,7 +169,7 @@ function VolunteerPage() {
     );
   }
 
-  const step1Valid = name && intro && cats.length > 0;
+  const step1Valid = name && intro && cats.length > 0 && isPhotoImage(photo);
   const step2Valid = phoneVerified && emergency.trim().length > 3 && coc;
 
   return (
@@ -160,21 +194,30 @@ function VolunteerPage() {
               placeholder="Daniel"
             />
           </Field>
-          <Field label="Photo" hint="Pick an avatar for now.">
-            <div className="flex flex-wrap gap-2">
-              {EMOJIS.map((e) => (
-                <button
-                  type="button"
-                  key={e}
-                  onClick={() => setPhoto(e)}
-                  className={cn(
-                    "grid h-12 w-12 place-items-center rounded-full border text-2xl transition",
-                    photo === e ? "border-primary bg-primary-soft" : "border-border",
-                  )}
-                >
-                  {e}
-                </button>
-              ))}
+          <Field
+            label="Profile photo (required)"
+            hint="A clear photo of your face helps neighbours recognise and trust you. JPG or PNG, under 3 MB."
+          >
+            <div className="flex items-center gap-4">
+              {photo ? (
+                <VolunteerPhoto photo={photo} name={name || "volunteer"} />
+              ) : (
+                <span className="grid h-20 w-20 place-items-center rounded-full border border-dashed border-border text-sm text-muted-foreground">
+                  No photo
+                </span>
+              )}
+              <div className="space-y-2">
+                <label className={cn(buttonClass("outline", "sm"), "cursor-pointer")}>
+                  {photo ? "Change photo" : "Upload photo"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={(e) => onPhotoPick(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+                {photoError ? <p className="text-sm text-destructive">{photoError}</p> : null}
+              </div>
             </div>
           </Field>
           <Field label="Neighbourhood">
