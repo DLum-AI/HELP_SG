@@ -169,7 +169,7 @@ function VolunteerPage() {
     );
   }
 
-  const step1Valid = name && intro && cats.length > 0;
+  const step1Valid = name && intro && cats.length > 0 && isPhotoImage(photo);
   const step2Valid = phoneVerified && emergency.trim().length > 3 && coc;
 
   return (
@@ -194,21 +194,30 @@ function VolunteerPage() {
               placeholder="Daniel"
             />
           </Field>
-          <Field label="Photo" hint="Pick an avatar for now.">
-            <div className="flex flex-wrap gap-2">
-              {EMOJIS.map((e) => (
-                <button
-                  type="button"
-                  key={e}
-                  onClick={() => setPhoto(e)}
-                  className={cn(
-                    "grid h-12 w-12 place-items-center rounded-full border text-2xl transition",
-                    photo === e ? "border-primary bg-primary-soft" : "border-border",
-                  )}
-                >
-                  {e}
-                </button>
-              ))}
+          <Field
+            label="Profile photo (required)"
+            hint="A clear photo of your face helps neighbours recognise and trust you. JPG or PNG, under 3 MB."
+          >
+            <div className="flex items-center gap-4">
+              {photo ? (
+                <VolunteerPhoto photo={photo} name={name || "volunteer"} />
+              ) : (
+                <span className="grid h-20 w-20 place-items-center rounded-full border border-dashed border-border text-sm text-muted-foreground">
+                  No photo
+                </span>
+              )}
+              <div className="space-y-2">
+                <label className={cn(buttonClass("outline", "sm"), "cursor-pointer")}>
+                  {photo ? "Change photo" : "Upload photo"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={(e) => onPhotoPick(e.target.files?.[0] ?? null)}
+                  />
+                </label>
+                {photoError ? <p className="text-sm text-destructive">{photoError}</p> : null}
+              </div>
             </div>
           </Field>
           <Field label="Neighbourhood">
