@@ -65,9 +65,17 @@ function RequestDetail() {
         <p className="mt-3 text-sm text-muted-foreground">{request.instructions}</p>
 
         <div className="mt-7 flex items-center gap-3 rounded-2xl bg-muted p-4">
-          <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-soft text-lg">
-            {request.requesterName.charAt(0)}
-          </span>
+          {request.requesterPhoto ? (
+            <img
+              src={request.requesterPhoto}
+              alt={`Photo of ${request.requesterName}`}
+              className="h-11 w-11 rounded-full border border-border object-cover"
+            />
+          ) : (
+            <span className="grid h-11 w-11 place-items-center rounded-full bg-primary-soft text-lg">
+              {request.requesterName.charAt(0)}
+            </span>
+          )}
           <div>
             <p className="font-semibold">
               {request.requesterName} · {request.neighbourhood}
