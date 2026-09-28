@@ -42,6 +42,9 @@ function NewRequest() {
   const update = (k: keyof typeof form, v: string | boolean) =>
     setForm((f) => ({ ...f, [k]: v }));
 
+  const [name, setName] = useState("");
+  const [photo, setPhoto] = useState("");
+  const [photoError, setPhotoError] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -51,11 +54,29 @@ function NewRequest() {
   const phoneDigits = phone.replace(/\D/g, "");
   const phoneValid = phoneDigits.length >= 8 && phoneDigits.length <= 15;
 
+  const onPhoto = (file: File | undefined) => {
+    setPhotoError("");
+    if (!file) return;
+    if (!/^image\/(jpeg|png)$/.test(file.type)) {
+      setPhotoError("Please choose a JPG or PNG image.");
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      setPhotoError("Please choose an image under 3 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setPhoto(String(reader.result));
+    reader.readAsDataURL(file);
+  };
+
   const submit = () => {
-    if (!cat || !emailValid || !phoneVerified) return;
+    if (!cat || !name.trim() || !emailValid || !phoneVerified) return;
     const id = actions.createRequest({
       ...form,
       category: cat,
+      requesterName: name.trim(),
+      requesterPhoto: photo || undefined,
       contact: { email: email.trim(), phone: phone.trim(), phoneVerified },
     });
     navigate({ to: "/requests/$id", params: { id } });
