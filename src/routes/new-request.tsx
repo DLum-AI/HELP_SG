@@ -76,7 +76,7 @@ function NewRequest() {
       ...form,
       category: cat,
       requesterName: name.trim(),
-      requesterPhoto: photo || undefined,
+      ...(photo ? { requesterPhoto: photo } : {}),
       contact: { email: email.trim(), phone: phone.trim(), phoneVerified },
     });
     navigate({ to: "/requests/$id", params: { id } });
