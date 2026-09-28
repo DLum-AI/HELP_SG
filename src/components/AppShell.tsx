@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { HandHeart, Heart, House, MessageCircle, Search, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { buttonClass } from "./ui-kit";
+import { HelpBot } from "./HelpBot";
 
 const navLinks = [
   { to: "/", label: "Home" },
