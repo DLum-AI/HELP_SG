@@ -186,7 +186,8 @@ function VolunteerPage() {
 
       {step === 1 ? (
         <div className="card-soft mt-6 space-y-5 p-6 sm:p-8">
-          <Field label="First name">
+          <RequiredLegend />
+          <Field label="First name" required>
             <input
               className={inputClass}
               value={name}
@@ -195,7 +196,8 @@ function VolunteerPage() {
             />
           </Field>
           <Field
-            label="Profile photo (required)"
+            label="Profile photo"
+            required
             hint="A clear photo of your face helps neighbours recognise and trust you. JPG or PNG, under 3 MB."
           >
             <div className="flex items-center gap-4">
@@ -220,7 +222,7 @@ function VolunteerPage() {
               </div>
             </div>
           </Field>
-          <Field label="Neighbourhood">
+          <Field label="Neighbourhood" required>
             <select
               className={inputClass}
               value={neighbourhood}
@@ -231,7 +233,7 @@ function VolunteerPage() {
               ))}
             </select>
           </Field>
-          <Field label="Short introduction">
+          <Field label="Short introduction" required>
             <textarea
               className={cn(inputClass, "min-h-24")}
               value={intro}
@@ -239,7 +241,7 @@ function VolunteerPage() {
               placeholder="I enjoy helping older people with errands and companionship."
             />
           </Field>
-          <Field label="Categories I can help with">
+          <Field label="Categories I can help with" required>
             <div className="flex flex-wrap gap-2">
               {CATEGORIES.map((c) => (
                 <button
@@ -275,7 +277,8 @@ function VolunteerPage() {
         </div>
       ) : (
         <div className="card-soft mt-6 space-y-5 p-6 sm:p-8">
-          <Field label="Mobile number" hint="We'll send a 6-digit code by SMS (demo: any 6 digits).">
+          <RequiredLegend />
+          <Field label="Mobile number" required hint="We'll send a 6-digit code by SMS (demo: any 6 digits).">
             <div className="flex gap-2">
               <input
                 className={inputClass}
@@ -313,7 +316,7 @@ function VolunteerPage() {
               </div>
             </Field>
           ) : null}
-          <Field label="Emergency contact" hint="Name and phone number. Kept private.">
+          <Field label="Emergency contact" required hint="Name and phone number. Kept private.">
             <input
               className={inputClass}
               value={emergency}
