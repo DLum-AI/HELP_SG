@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button, Field, Section, inputClass } from "@/components/ui-kit";
+import { DatePicker, TimePicker } from "@/components/date-time";
 import { CATEGORIES, NEIGHBOURHOODS, actions, type CategoryId } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -133,20 +134,18 @@ function NewRequest() {
           <>
             <h1 className="text-2xl">When & where?</h1>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Date">
-                <input
-                  className={inputClass}
+              <Field label="Date" hint="Pick a single day, or a range if you're flexible.">
+                <DatePicker
+                  range
                   value={form.date}
-                  onChange={(e) => update("date", e.target.value)}
-                  placeholder="Friday, 2 Oct"
+                  onChange={(v) => update("date", v)}
+                  placeholder="Pick a date or range"
                 />
               </Field>
               <Field label="Time">
-                <input
-                  className={inputClass}
+                <TimePicker
                   value={form.time}
-                  onChange={(e) => update("time", e.target.value)}
-                  placeholder="2:00 PM"
+                  onChange={(v) => update("time", v)}
                 />
               </Field>
               <Field label="Estimated duration">
