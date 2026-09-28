@@ -222,9 +222,45 @@ function NewRequest() {
               <div>
                 <p className="font-semibold">Your contact details</p>
                 <p className="text-sm text-muted-foreground">
-                  Kept private — never shown publicly. Only shared with a volunteer after they offer to help.
+                  Your email and phone stay private — only shared with a volunteer after they offer to help.
                 </p>
               </div>
+              <Field label="Your name" required hint="Shown publicly on your request.">
+                <input
+                  className={inputClass}
+                  value={name}
+                  maxLength={60}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Sarah"
+                />
+              </Field>
+              <Field label="Your photo" hint="Optional — helps volunteers recognise you. JPG or PNG, under 3 MB.">
+                <div className="flex items-center gap-3">
+                  {photo ? (
+                    <img
+                      src={photo}
+                      alt="Your photo preview"
+                      className="h-14 w-14 rounded-full border border-border object-cover"
+                    />
+                  ) : (
+                    <span className="grid h-14 w-14 place-items-center rounded-full bg-muted text-xl text-muted-foreground">
+                      ?
+                    </span>
+                  )}
+                  <label className={cn(inputClass, "cursor-pointer text-sm")}>
+                    {photo ? "Change photo" : "Upload photo"}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png"
+                      className="hidden"
+                      onChange={(e) => onPhoto(e.target.files?.[0])}
+                    />
+                  </label>
+                </div>
+                {photoError ? (
+                  <span className="block text-sm text-destructive">{photoError}</span>
+                ) : null}
+              </Field>
               <Field label="Email" required>
                 <input
                   className={inputClass}
@@ -283,7 +319,7 @@ function NewRequest() {
                 Back
               </Button>
               <Button
-                disabled={!form.date || !form.time || !emailValid || !phoneVerified}
+                disabled={!form.date || !form.time || !name.trim() || !emailValid || !phoneVerified}
                 onClick={submit}
                 size="lg"
               >
