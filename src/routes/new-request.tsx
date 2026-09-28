@@ -42,9 +42,22 @@ function NewRequest() {
   const update = (k: keyof typeof form, v: string | boolean) =>
     setForm((f) => ({ ...f, [k]: v }));
 
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim()) && email.length <= 255;
+  const phoneDigits = phone.replace(/\D/g, "");
+  const phoneValid = phoneDigits.length >= 8 && phoneDigits.length <= 15;
+
   const submit = () => {
-    if (!cat) return;
-    const id = actions.createRequest({ ...form, category: cat });
+    if (!cat || !emailValid || !phoneVerified) return;
+    const id = actions.createRequest({
+      ...form,
+      category: cat,
+      contact: { email: email.trim(), phone: phone.trim(), phoneVerified },
+    });
     navigate({ to: "/requests/$id", params: { id } });
   };
 
@@ -184,11 +197,75 @@ function NewRequest() {
               />
               This is a recurring request
             </label>
+            <div className="space-y-4 rounded-md border border-border p-4">
+              <div>
+                <p className="font-semibold">Your contact details</p>
+                <p className="text-sm text-muted-foreground">
+                  Kept private — never shown publicly. Only shared with a volunteer after they offer to help.
+                </p>
+              </div>
+              <Field label="Email" required>
+                <input
+                  className={inputClass}
+                  type="email"
+                  value={email}
+                  maxLength={255}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                />
+                {email && !emailValid ? (
+                  <span className="block text-sm text-destructive">Please enter a valid email.</span>
+                ) : null}
+              </Field>
+              <Field label="Mobile number" required hint="We'll send a 6-digit code by SMS (demo: any 6 digits).">
+                <div className="flex gap-2">
+                  <input
+                    className={inputClass}
+                    value={phone}
+                    disabled={phoneVerified}
+                    maxLength={20}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+65 9123 4567"
+                    inputMode="tel"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={phoneVerified || !phoneValid}
+                    onClick={() => setOtpSent(true)}
+                  >
+                    {otpSent ? "Resend" : "Send code"}
+                  </Button>
+                </div>
+              </Field>
+              {phoneVerified ? (
+                <p className="text-sm font-semibold text-primary">✓ Phone number verified</p>
+              ) : otpSent ? (
+                <Field label="Enter code">
+                  <div className="flex gap-2">
+                    <input
+                      className={inputClass}
+                      value={otp}
+                      onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      placeholder="123456"
+                      inputMode="numeric"
+                    />
+                    <Button type="button" disabled={otp.length !== 6} onClick={() => setPhoneVerified(true)}>
+                      Verify
+                    </Button>
+                  </div>
+                </Field>
+              ) : null}
+            </div>
             <div className="flex gap-3">
               <Button variant="outline" onClick={() => setStep(2)}>
                 Back
               </Button>
-              <Button disabled={!form.date || !form.time} onClick={submit} size="lg">
+              <Button
+                disabled={!form.date || !form.time || !emailValid || !phoneVerified}
+                onClick={submit}
+                size="lg"
+              >
                 Post Request
               </Button>
             </div>
